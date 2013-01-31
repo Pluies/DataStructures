@@ -14,7 +14,8 @@ List of data structures
 =======================
 
 * Linked list: done
-* Stack: TODO
+* Stack: done
+* Queue: TODO
 * Heap: TODO
 * Tree: TODO
 * Trie: TODO
