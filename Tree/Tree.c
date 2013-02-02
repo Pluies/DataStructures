@@ -37,7 +37,7 @@ int cleanupNodes(node* n){
 
 int insertNode(node* n, node* head){
 	// Sorting on addresses. Why not!
-	if (n->value == head->value) return EXIT_SUCCESS; // Do not allow duplicates
+	if (n->value == head->value) return EXIT_FAILURE; // Do not allow duplicates
 	if (n->value >  head->value) {
 		if (head->rhc == NULL){
 			head->rhc = n;
@@ -58,8 +58,56 @@ int insertNode(node* n, node* head){
 	}
 }
 
+node* findSuccessor(node* n){
+	assert(n != NULL);
+	if (n->rhc == NULL)
+		return n;
+	else
+		return findSuccessor(n->rhc);
+}
+
+node* deleteInTree(node* n, void* value, Tree* topTree){
+	assert(n != NULL);
+	while (n->value != value){
+		if (value > n->value)
+			n = n->rhc;
+		else
+			n = n->lhc;
+		if (n == NULL) return NULL;
+	}
+	// We now have the correct node to delete
+	if (n->lhc == NULL) {
+		if (n->parent == NULL) {
+			topTree->head = n->rhc;
+			if (n->rhc != NULL) n->rhc->parent = NULL;
+		} else {
+			if (n->parent->lhc == n) n->parent->lhc = n->rhc;
+			if (n->parent->rhc == n) n->parent->rhc = n->rhc;
+			if (n->rhc != NULL) n->rhc->parent = n->parent;
+		}
+		return n;
+	}
+	if (n->rhc == NULL) {
+		if (n->parent == NULL) {
+			topTree->head = n->lhc;
+			if (n->lhc != NULL) n->lhc->parent = NULL;
+		} else {
+			if (n->parent->lhc == n) n->parent->lhc = n->lhc;
+			if (n->parent->rhc == n) n->parent->rhc = n->lhc;
+			if (n->lhc != NULL) n->lhc->parent = n->parent;
+		}
+		return n;
+	}
+	// Hard case: we're deleting a node with two children.
+	// We'll keep the right-hand successor as new value
+	node* successor = findSuccessor(n->lhc);
+	n->value = successor->value;
+	return deleteInTree(successor, successor->value, topTree);
+}
+
 void rebalance(Tree* t){
 	// TODO
+	t->insertsSinceBalancing = 0;
 	return;
 }
 
@@ -75,61 +123,29 @@ Tree* create(){
 
 int insert(Tree* t, void* value){
 	node* n = createNode(value);
+	int inserted = 0;
 	if (isEmpty(t)) {
 		t->head = n;
+		inserted = 1;
 	} else {
-		insertNode(n, t->head);
+		if (insertNode(n, t->head) == EXIT_SUCCESS)
+			inserted = 1;
+		else
+			free(n);
 	}
-	t->size += 1;
-	t->insertsSinceBalancing += 1;
-	if (t->insertsSinceBalancing > (0.25 * t->size))
-		rebalance(t);
-	return EXIT_SUCCESS;
-}
-
-node* findSuccessor(node* n){
-	assert(n != NULL);
-	if (n->rhc == NULL)
-		return n;
-	else
-		return findSuccessor(n->rhc);
-}
-
-node* deleteInTree(node* n, void* value){
-	assert(n != NULL);
-	while (n->value != value){
-		if (value > n->value) n = n->rhc;
-		if (value < n->value) n = n->lhc;
-		if (n == NULL) return NULL;
+	if (inserted) {
+		t->size += 1;
+		t->insertsSinceBalancing += 1;
+		if (t->insertsSinceBalancing > (0.25 * t->size))
+			rebalance(t);
 	}
-	// We now have the correct node to delete
-	if (n->parent == NULL){
-		// Deleting root
-		return n;
-	}
-	if (n->lhc == NULL) {
-		if (n->parent->lhc == n) n->parent->lhc = n->rhc;
-		if (n->parent->rhc == n) n->parent->rhc = n->rhc;
-		if (n->rhc != NULL) n->rhc->parent = n->parent;
-		return n;
-	}
-	if (n->rhc == NULL) {
-		if (n->parent->lhc == n) n->parent->lhc = n->lhc;
-		if (n->parent->rhc == n) n->parent->rhc = n->lhc;
-		if (n->lhc != NULL) n->lhc->parent = n->parent;
-		return n;
-	}
-	// Hard case: we're deleting a node with two children.
-	// We'll keep the right-hand successor as new value
-	node* successor = findSuccessor(n->lhc);
-	n->value = successor->value;
-	return deleteInTree(successor, successor->value);
+	return inserted;
 }
 
 int delete(Tree* t, void* value){
 	if (isEmpty(t)) return EXIT_FAILURE;
 
-	node* toFree = deleteInTree(t->head, value);
+	node* toFree = deleteInTree(t->head, value, t);
 
 	if(toFree == NULL){
 		// Didn't find the node to delete
@@ -155,6 +171,46 @@ int cleanup(Tree* t){
 	// Recursively free nodes if need be
 	cleanupNodes(t->head);
 	free(t);
+	return EXIT_SUCCESS;
+}
+
+
+/* Integrity checks and helpers */
+
+int max(int a, int b){ return (a>b) ? a : b; }
+int maxDepth(node* n) {
+	if (n == NULL) return 0;
+	return max(maxDepth(n->rhc), maxDepth(n->lhc)) + 1;
+}
+
+int min(int a, int b){ return (a<b) ? a : b; }
+int minDepth(node* n) {
+	if (n == NULL) return 0;
+	return min(minDepth(n->rhc), minDepth(n->lhc)) + 1;
+}
+
+void inOrder(node* n) {
+	assert (n != NULL);
+	if (n->lhc != NULL) {
+		assert(n->lhc->value < n->value);
+		inOrder(n->lhc);
+	}
+	if (n->rhc != NULL){
+		assert(n->rhc->value > n->value);
+		inOrder(n->rhc);
+	}
+}
+
+int check(Tree* t){
+	assert(t != NULL);
+	if(isEmpty(t)) {
+		printf("Tree is empty.\n");
+	} else {
+		printf("Max depth is %d\n", maxDepth(t->head));
+		printf("Min depth is %d\n", minDepth(t->head));
+		inOrder(t->head);
+		printf("In order ok\n");
+	}
 	return EXIT_SUCCESS;
 }
 

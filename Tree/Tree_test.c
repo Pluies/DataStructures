@@ -1,4 +1,10 @@
 #include "Tree.h"
+#include <time.h>
+
+unsigned int randr(unsigned int min, unsigned int max) {
+       double scaled = (double)rand()/RAND_MAX;
+       return (max - min +1)*scaled + min;
+}
 
 int main(int argc, char** argv){
 	
@@ -39,5 +45,34 @@ int main(int argc, char** argv){
 
 	printf("\nCleaning up...\n");
 	cleanup(t);
+
+	// More advanced testing
+#define TESTS 10000
+	Tree* t2 = create();
+	int values[TESTS];
+	int* positions[TESTS];
+	int i;
+	srand(time(NULL));
+
+	printf("\n\nExtensive testing. Adding %d elements.\n", TESTS);
+	for (i=0; i<TESTS; i++) {
+		positions[i] = &values[randr(0, TESTS-1)];
+		insert(t2, positions[i]);
+	}
+
+	printf("t2 size is %d (should be slightly less than %d because of duplicates)\n", t2->size, TESTS);
+	check(t2);
+	//display(t2);
+
+	int elemsToDelete = TESTS;
+	printf("Deleting %d elements.\n", elemsToDelete);
+	for (i=0; i<elemsToDelete; i++) {
+		delete(t2, positions[i]);
+	}
+	check(t2);
+
+	printf("\nCleaning up t2...\n");
+	cleanup(t2);
+
 	return 0;
 }

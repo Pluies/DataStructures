@@ -28,6 +28,7 @@ int insert(Tree* t, void* value);
 int delete(Tree* t, void* value);
 int display(Tree* t);
 int cleanup(Tree* t);
+int check(Tree* t);
 
 #endif
 
