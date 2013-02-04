@@ -105,18 +105,12 @@ node* deleteInTree(node* n, void* value, Tree* topTree){
 	return deleteInTree(successor, successor->value, topTree);
 }
 
-void rebalance(Tree* t){
-	// TODO
-	t->insertsSinceBalancing = 0;
-	return;
-}
-
 
 /* Interface */
 
 Tree* create(){
 	Tree* t = malloc(sizeof(Tree));
-	t->size = t->insertsSinceBalancing = 0;
+	t->size = 0;
 	t->head = NULL;
 	return t;
 }
@@ -135,9 +129,6 @@ int insert(Tree* t, void* value){
 	}
 	if (inserted) {
 		t->size += 1;
-		t->insertsSinceBalancing += 1;
-		if (t->insertsSinceBalancing > (0.25 * t->size))
-			rebalance(t);
 	}
 	return inserted;
 }

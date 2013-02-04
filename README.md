@@ -16,6 +16,7 @@ List of data structures
 * Linked list: done
 * Stack: done
 * Queue: done
-* Tree: in progress
+* Binary Tree (unbalanced): done
+* AVL Tree: TODO
 * Heap: TODO
 * Trie: TODO

@@ -17,7 +17,6 @@ struct node {
 
 typedef struct {
 	int size;
-	int insertsSinceBalancing;
 	node* head;
 } Tree;
 
