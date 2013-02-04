@@ -8,7 +8,7 @@ Conventions
 
 * No specific C style followed.
 * Values stored in the data structures will be void\*, memory management of these shall be done by the calling program.
-* Return values are EXIT\_SUCCESS and EXIT\_FAILURE
+* Return values are EXIT\_SUCCESS and EXIT\_FAILURE when it makes sense
 
 List of data structures
 =======================
@@ -17,6 +17,7 @@ List of data structures
 * Stack: done
 * Queue: done
 * Binary Tree (unbalanced): done
-* AVL Tree: TODO
+* AVL Tree: done
 * Heap: TODO
 * Trie: TODO
+* Hash table: TODO
