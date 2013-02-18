@@ -18,6 +18,6 @@ List of data structures
 * Queue: done
 * Binary Tree (unbalanced): done
 * AVL Tree: done
+* Hash table: done
 * Heap: TODO
 * Trie: TODO
-* Hash table: TODO
